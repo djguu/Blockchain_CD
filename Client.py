@@ -49,7 +49,7 @@ class Client:
         file_out.write(public_key)
         file_out.close()
 
-cl = Client("djguu", "teste")
+# cl = Client("djguu", "teste")
 # print(type(cl.message))
 
 
