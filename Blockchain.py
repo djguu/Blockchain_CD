@@ -26,7 +26,6 @@ class Block:
         into JSON string.
         """
         block_string = json.dumps(self.__dict__, sort_keys=True)
-        print(block_string)
         return sha256(block_string.encode()).hexdigest()
         # return sha256(bytes(self)).hexdigest()
 
@@ -71,6 +70,7 @@ class Blockchain:
         while not computed_hash.startswith('0' * Blockchain.difficulty):
             block.nonce += 1
             computed_hash = block.compute_hash()
+            print("Current nonce: " + str(block.nonce))
 
         return computed_hash
 
@@ -105,7 +105,6 @@ class Blockchain:
 
     def add_new_transaction(self, transaction):
         self.unconfirmed_transactions.append(transaction)
-        print(transaction)
 
     def mine(self):
         """
@@ -124,7 +123,7 @@ class Blockchain:
                           previous_hash=last_block.hash)
 
         proof = self.proof_of_work(new_block)
-        print(proof)
+
         self.add_block(new_block, proof)
         self.unconfirmed_transactions = []
         return new_block.index

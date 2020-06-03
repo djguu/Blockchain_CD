@@ -28,7 +28,6 @@ class Client:
         h = SHA256.new(self.message.encode())
         signer = pkcs1_15.new(self.sk)
         self.signature = binascii.hexlify(signer.sign(h)).decode('ascii')
-        print(self.signature)
 
     def verify(self):
         key = RSA.import_key(open(self.pk_file).read())
