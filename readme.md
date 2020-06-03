@@ -1,4 +1,4 @@
-#My Distribuited Computation Project
+# My Distribuited Computation Project
 
 #### Using python 3.7
 
