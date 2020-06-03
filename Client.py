@@ -3,11 +3,19 @@ from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 import os.path
 from os import path
+import binascii
+
+
+class Transaction:
+    def __init__(self, sender_pk, message, signature):
+        self.sender_pk = sender_pk
+        self.message = message
+        self.signature = signature
 
 
 class Client:
     def __init__(self, user, message):
-        self.message = message.encode()
+        self.message = message
         self.user = user
         self.pk_file = 'keys/' + user + '.pk.pem'
         self.sk_file = 'keys/' + user + '.sk.pem'
@@ -16,16 +24,19 @@ class Client:
             self.verify()
 
     def sign(self):
-        key = RSA.import_key(open(self.sk_file).read())
-        self.h = SHA256.new(self.message)
-        self.signature = pkcs1_15.new(key).sign(self.h)
+        self.sk = RSA.import_key(open(self.sk_file).read())
+        h = SHA256.new(self.message.encode())
+        signer = pkcs1_15.new(self.sk)
+        self.signature = binascii.hexlify(signer.sign(h)).decode('ascii')
         print(self.signature)
 
     def verify(self):
         key = RSA.import_key(open(self.pk_file).read())
-        h = SHA256.new(self.message)
+        self.pk = binascii.hexlify(key.export_key(format='DER')).decode('ascii')
+        h = SHA256.new(self.message.encode())
         try:
-            pkcs1_15.new(key).verify(self.h, self.signature)
+            verifier = pkcs1_15.new(key)
+            verifier.verify(h, binascii.unhexlify(self.signature))
             print("The signature is valid.")
         except (ValueError, TypeError):
             print("The signature is not valid.")

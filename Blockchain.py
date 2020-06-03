@@ -2,6 +2,7 @@ from hashlib import sha256
 import json
 import time
 from Client import Client
+from Client import Transaction
 
 
 class Block:
@@ -25,6 +26,7 @@ class Block:
         into JSON string.
         """
         block_string = json.dumps(self.__dict__, sort_keys=True)
+        print(block_string)
         return sha256(block_string.encode()).hexdigest()
         # return sha256(bytes(self)).hexdigest()
 
@@ -81,7 +83,6 @@ class Blockchain:
           in the chain match.
         """
         previous_hash = self.last_block.hash
-        # block.compute_hash()
 
         if previous_hash != block.previous_hash:
             return False
@@ -104,6 +105,7 @@ class Blockchain:
 
     def add_new_transaction(self, transaction):
         self.unconfirmed_transactions.append(transaction)
+        print(transaction)
 
     def mine(self):
         """
@@ -128,18 +130,11 @@ class Blockchain:
         return new_block.index
 
 
-class Transaction:
-    def __init__(self, client, message, signature):
-        self.client = client
-        self.message = message
-        self.signature = signature
-
-
 bc = Blockchain()
-client1 = Client("testUser", "test")
+client1 = Client("testUser", "User A sent X to User B")
 
-cl_transaction = '{{"owner": "{}", "message": "{}", "signature": "{}"}}'.format(client1.user,client1.h.hexdigest(), "teste")
-bc.add_new_transaction(cl_transaction)
+cl_transaction = '{{"owner": "{}", "message": "{}", "signature": "{}"}}'.format(client1.pk, client1.message, client1.signature)
+bc.add_new_transaction(json.loads(cl_transaction))
 mine = bc.mine()
 print("block index: " + str(mine))
 
