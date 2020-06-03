@@ -25,6 +25,8 @@ class Block:
         into JSON string.
         """
         block_string = json.dumps(self.__dict__, sort_keys=True)
+        return sha256(block_string.encode()).hexdigest()
+        # return sha256(bytes(self)).hexdigest()
 
 class Blockchain:
     # difficulty of PoW algorithm
