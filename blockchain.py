@@ -1,8 +1,10 @@
+import binascii
 from hashlib import sha256
+from Crypto.Signature import pkcs1_15
+from Crypto.Hash import SHA256
+from Crypto.PublicKey import RSA
 import json
 import time
-from Client import Client
-from Client import Transaction
 
 
 class Block:
@@ -26,8 +28,8 @@ class Block:
         into JSON string.
         """
         block_string = json.dumps(self.__dict__, sort_keys=True)
+        # print(block_string)
         return sha256(block_string.encode()).hexdigest()
-        # return sha256(bytes(self)).hexdigest()
 
 class Blockchain:
     # difficulty of PoW algorithm
@@ -70,7 +72,7 @@ class Blockchain:
         while not computed_hash.startswith('0' * Blockchain.difficulty):
             block.nonce += 1
             computed_hash = block.compute_hash()
-            print("Current nonce: " + str(block.nonce))
+            # print("Current nonce: " + str(block.nonce))
 
         return computed_hash
 
@@ -103,8 +105,22 @@ class Blockchain:
         return (block_hash.startswith('0' * Blockchain.difficulty) and
                 block_hash == block.compute_hash())
 
+    def verify_transaction(self, transaction):
+        public_key = transaction.sender_pk
+        h = SHA256.new(str(transaction.to_dict()).encode('utf-8'))
+        try:
+            verifier = pkcs1_15.new(public_key)
+            verifier.verify(h, binascii.unhexlify(transaction.signature))
+            # print("The signature is valid.")
+            return True
+        except (ValueError, TypeError):
+            print("The signature is not valid.")
+            return False
+
+
     def add_new_transaction(self, transaction):
-        self.unconfirmed_transactions.append(transaction)
+        if self.verify_transaction(transaction):
+            self.unconfirmed_transactions.append(json.dumps(transaction.to_dict()))
 
     def mine(self):
         """
@@ -114,6 +130,8 @@ class Blockchain:
         """
         if not self.unconfirmed_transactions:
             return False
+        # else:
+        #     print("no transactions yet")
 
         last_block = self.last_block
 
@@ -126,14 +144,6 @@ class Blockchain:
 
         self.add_block(new_block, proof)
         self.unconfirmed_transactions = []
-        return new_block.index
+        print("block index: " + str(new_block.index))
 
-
-bc = Blockchain()
-client1 = Client("testUser", "User A sent X to User B")
-
-cl_transaction = '{{"owner": "{}", "message": "{}", "signature": "{}"}}'.format(client1.pk, client1.message, client1.signature)
-bc.add_new_transaction(json.loads(cl_transaction))
-mine = bc.mine()
-print("block index: " + str(mine))
 
