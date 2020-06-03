@@ -25,9 +25,6 @@ class Block:
         into JSON string.
         """
         block_string = json.dumps(self.__dict__, sort_keys=True)
-        print(block_string)
-        return sha256(block_string.encode()).hexdigest()
-        # return sha256(bytes(self)).hexdigest()
 
 class Blockchain:
     # difficulty of PoW algorithm
@@ -105,7 +102,6 @@ class Blockchain:
 
     def add_new_transaction(self, transaction):
         self.unconfirmed_transactions.append(transaction)
-        print(transaction)
 
     def mine(self):
         """
@@ -141,21 +137,7 @@ bc = Blockchain()
 client1 = Client("testUser", "test")
 
 cl_transaction = '{{"owner": "{}", "message": "{}", "signature": "{}"}}'.format(client1.user,client1.h.hexdigest(), "teste")
-# cl_transaction = Transaction(client1.user, client1.h.hexdigest(), client1.signature)
 bc.add_new_transaction(cl_transaction)
 mine = bc.mine()
 print("block index: " + str(mine))
 
-# encoding = 'latin1'
-# teste = str(client1.signature)[2:-1]
-# teste = client1.signature.decode('GB18030')
-# cl_transaction = '{{"owner": "{}", "message": "{}", "signature": "{}"}}'.format(client1.user,client1.h.hexdigest(), teste)
-# bc.add_new_transaction(json.loads(cl_transaction))
-
-# bc.add_new_transaction(json.loads('''
-# {
-#   "owner": {},
-#   "message": {},
-#   "signature": {}
-# }
-# '''.format(client1.pk, client1.message, client1.signature)))
