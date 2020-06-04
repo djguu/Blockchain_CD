@@ -8,4 +8,4 @@
 
 #### Run project
 
-* ``python3 ./Blockchain.py`` 
+* ``python3 ./client.py`` 
