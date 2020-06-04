@@ -2,7 +2,6 @@ import binascii
 from hashlib import sha256
 from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
-from Crypto.PublicKey import RSA
 import json
 import time
 
@@ -28,8 +27,8 @@ class Block:
         into JSON string.
         """
         block_string = json.dumps(self.__dict__, sort_keys=True)
-        # print(block_string)
         return sha256(block_string.encode()).hexdigest()
+
 
 class Blockchain:
     # difficulty of PoW algorithm
@@ -102,10 +101,12 @@ class Blockchain:
         Check if block_hash is valid hash of block and satisfies
         the difficulty criteria.
         """
+
         return (block_hash.startswith('0' * Blockchain.difficulty) and
                 block_hash == block.compute_hash())
 
-    def verify_transaction(self, transaction):
+    @staticmethod
+    def verify_transaction(transaction):
         public_key = transaction.sender_pk
         h = SHA256.new(str(transaction.to_dict()).encode('utf-8'))
         try:
@@ -116,7 +117,6 @@ class Blockchain:
         except (ValueError, TypeError):
             print("The signature is not valid.")
             return False
-
 
     def add_new_transaction(self, transaction):
         if self.verify_transaction(transaction):
@@ -130,8 +130,6 @@ class Blockchain:
         """
         if not self.unconfirmed_transactions:
             return False
-        # else:
-        #     print("no transactions yet")
 
         last_block = self.last_block
 
@@ -143,7 +141,33 @@ class Blockchain:
         proof = self.proof_of_work(new_block)
 
         self.add_block(new_block, proof)
+
         self.unconfirmed_transactions = []
-        print("block index: " + str(new_block.index))
+        # print("Nonce of block #" + str(new_block.index) + ": " + str(new_block.nonce))
+
+        return True
+
+    # @classmethod
+    def check_chain_validity(self):
+        """
+        A helper method to check if the entire blockchain is valid.
+        """
+        result = True
+        previous_hash = "0"
+
+        # Iterate through every block
+        for block in self.chain:
+            block_hash = block.hash
+            # remove the hash field to recompute the hash again
+            # using `compute_hash` method.
+            delattr(block, "hash")
+
+            if block.index != 0 and (not self.is_valid_proof(block, block_hash) or previous_hash != block.previous_hash):
+                result = False
+                break
+
+            block.hash, previous_hash = block_hash, block_hash
+
+        return result
 
 

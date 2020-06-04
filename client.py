@@ -1,11 +1,10 @@
 from collections import OrderedDict
 
-from Crypto.Signature import pkcs1_15
-from Crypto.Hash import SHA256
-from Crypto.PublicKey import RSA
 import os.path
 from os import path
-import binascii
+
+from Crypto.PublicKey import RSA
+
 from blockchain import *
 
 
@@ -37,8 +36,9 @@ class User:
         if not self.keys_exist():
             self.create_keys()
 
-        self.get_keys()
+        self.set_keys()
 
+    # Checks if the keys already exist or not
     def keys_exist(self):
         if not os.path.exists('keys'):
             os.makedirs('keys')
@@ -46,6 +46,7 @@ class User:
             return False
         return True
 
+    # This function creates public and secret keys for user
     def create_keys(self):
         key = RSA.generate(2048)
         private_key = key.export_key()
@@ -58,33 +59,62 @@ class User:
         file_out.write(public_key)
         file_out.close()
 
-    def get_keys(self):
+    # This function sets the keys of the current user
+    def set_keys(self):
         # Secret key of the user
         self.sk = RSA.import_key(open(self.sk_file).read())
-        # self.sk = binascii.hexlify(secret_key.export_key())
 
         # Public key of the user
         self.pk = RSA.import_key(open(self.pk_file).read())
-        # self.pk = binascii.hexlify(public_key.export_key())
+
+
+def mine_unconfirmed_transactions():
+    result = blockchain.mine()
+    if not result:
+        return "No transactions to mine"
+    else:
+        if blockchain.check_chain_validity():
+            return "Block #{} is mined.".format(blockchain.last_block.index)
+
+
+        # Making sure we have the longest chain before announcing to the network
+        #chain_length = len(blockchain.chain)
+        #consensus()
+        #if chain_length == len(blockchain.chain):
+            # announce the recently mined block to the network
+        #    announce_new_block(blockchain.last_block)
+        # return "Block #{} is mined.".format(blockchain.last_block.index)
 
 
 # Initializing blockchain
-bc = Blockchain()
+blockchain = Blockchain()
 
 # Initializing users
 client1 = User("testUser")
 client2 = User("testeUser2")
 
-transaction = Transaction(client1.pk, client1.sk, client2.pk, "User A sent X to User B")
-transaction.sign_transaction()
+# init_time = time.time()
 
-bc.add_new_transaction(transaction)
+# Create transactions and blocks to mine them
+for x in range(10):
+    # start_time = time.time()
 
-transaction = Transaction(client1.pk, client1.sk, client2.pk, "User x sent X to User y")
-transaction.sign_transaction()
+    transaction = Transaction(client1.pk, client1.sk, client2.pk, "User 1 sent X to User 2")
+    transaction.sign_transaction()
 
-bc.add_new_transaction(transaction)
+    blockchain.add_new_transaction(transaction)
 
-mine = bc.mine()
+    print(mine_unconfirmed_transactions())
 
+#     # Show how much time has passed to mine one block
+#     elapsed_time = time.time() - start_time
+#     hours, rem = divmod(elapsed_time, 3600)
+#     minutes, seconds = divmod(rem, 60)
+#     print("Time passed: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
+#
+# # Show how much time has passed to mine every block
+# final_time = time.time() - init_time
+# hours, rem = divmod(final_time, 3600)
+# minutes, seconds = divmod(rem, 60)
+# print("Final time passed: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
 
