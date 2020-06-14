@@ -5,12 +5,19 @@ from os import path
 
 from Crypto.PublicKey import RSA
 
-from blockchain import *
+import binascii
+from hashlib import sha256
+from Crypto.Signature import pkcs1_15
+from Crypto.Hash import SHA256
+import json
+import time
 
-from flask import Flask
-from flask import request
+# from blockchain import *
 
-node = Flask(__name__)
+# from flask import Flask
+# from flask import request
+#
+# node = Flask(__name__)
 
 
 class Transaction:
@@ -31,7 +38,9 @@ class Transaction:
     def sign_transaction(self):
         h = SHA256.new(str(self.to_dict()).encode('utf-8'))
         signer = pkcs1_15.new(self.sender_sk)
-        self.signature = binascii.hexlify(signer.sign(h)).decode('ascii')
+        teste = signer.sign(h)
+        print(teste)
+        self.signature = binascii.hexlify(teste).decode('ascii')
 
 
 class User:
@@ -95,36 +104,36 @@ def mine_unconfirmed_transactions():
         # return "Block #{} is mined.".format(blockchain.last_block.index)
 
 
-# Initializing blockchain
-blockchain = Blockchain()
-
-# Initializing users
-client1 = User("testUser")
-client2 = User("testeUser2")
-
-# init_time = time.time()
-
-# Create transactions and blocks to mine them
-for x in range(10):
-    start_time = time.time()
-
-    transaction = Transaction(client1.pk, client1.sk, client2.pk, "User 1 sent X to User 2")
-    transaction.sign_transaction()
-
-    blockchain.add_new_transaction(transaction)
-
-    print(mine_unconfirmed_transactions())
-
-    # Show how much time has passed to mine one block
-    elapsed_time = time.time() - start_time
-    hours, rem = divmod(elapsed_time, 3600)
-    minutes, seconds = divmod(rem, 60)
-    print("Time passed: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
+# # Initializing blockchain
+# blockchain = Blockchain()
 #
-# # Show how much time has passed to mine every block
-# final_time = time.time() - init_time
-# hours, rem = divmod(final_time, 3600)
-# minutes, seconds = divmod(rem, 60)
-# print("Final time passed: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
-
-
+# # Initializing users
+# client1 = User("testUser")
+# client2 = User("testeUser2")
+#
+# # init_time = time.time()
+#
+# # Create transactions and blocks to mine them
+# for x in range(10):
+#     start_time = time.time()
+#
+#     transaction = Transaction(client1.pk, client1.sk, client2.pk, "User 1 sent X to User 2")
+#     transaction.sign_transaction()
+#
+#     blockchain.add_new_transaction(transaction)
+#
+#     print(mine_unconfirmed_transactions())
+#
+#     # Show how much time has passed to mine one block
+#     elapsed_time = time.time() - start_time
+#     hours, rem = divmod(elapsed_time, 3600)
+#     minutes, seconds = divmod(rem, 60)
+#     print("Time passed: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
+# #
+# # # Show how much time has passed to mine every block
+# # final_time = time.time() - init_time
+# # hours, rem = divmod(final_time, 3600)
+# # minutes, seconds = divmod(rem, 60)
+# # print("Final time passed: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
+#
+#
