@@ -7,6 +7,11 @@ from Crypto.PublicKey import RSA
 
 from blockchain import *
 
+from flask import Flask
+from flask import request
+
+node = Flask(__name__)
+
 
 class Transaction:
     def __init__(self, sender_pk, sender_sk, receiver_pk, message):
@@ -14,11 +19,14 @@ class Transaction:
         self.sender_sk = sender_sk
         self.receiver_pk = receiver_pk
         self.message = message
+        self.signature = None
 
     def to_dict(self):
         return OrderedDict({'sender_address': binascii.hexlify(self.sender_pk.export_key()).decode('ascii'),
-                            'recipient_address':  binascii.hexlify(self.receiver_pk.export_key()).decode('ascii'),
+                            'recipient_address': binascii.hexlify(self.receiver_pk.export_key()).decode('ascii'),
                             'message': self.message})
+
+    # def to_json(self):
 
     def sign_transaction(self):
         h = SHA256.new(str(self.to_dict()).encode('utf-8'))
@@ -32,6 +40,8 @@ class User:
         self.user = user
         self.pk_file = 'keys/' + user + '.pk.pem'
         self.sk_file = 'keys/' + user + '.sk.pem'
+        self.sk = None
+        self.pk = None
 
         if not self.keys_exist():
             self.create_keys()
@@ -76,12 +86,11 @@ def mine_unconfirmed_transactions():
         if blockchain.check_chain_validity():
             return "Block #{} is mined.".format(blockchain.last_block.index)
 
-
         # Making sure we have the longest chain before announcing to the network
-        #chain_length = len(blockchain.chain)
-        #consensus()
-        #if chain_length == len(blockchain.chain):
-            # announce the recently mined block to the network
+        # chain_length = len(blockchain.chain)
+        # consensus()
+        # if chain_length == len(blockchain.chain):
+        # announce the recently mined block to the network
         #    announce_new_block(blockchain.last_block)
         # return "Block #{} is mined.".format(blockchain.last_block.index)
 
@@ -97,7 +106,7 @@ client2 = User("testeUser2")
 
 # Create transactions and blocks to mine them
 for x in range(10):
-    # start_time = time.time()
+    start_time = time.time()
 
     transaction = Transaction(client1.pk, client1.sk, client2.pk, "User 1 sent X to User 2")
     transaction.sign_transaction()
@@ -106,15 +115,16 @@ for x in range(10):
 
     print(mine_unconfirmed_transactions())
 
-#     # Show how much time has passed to mine one block
-#     elapsed_time = time.time() - start_time
-#     hours, rem = divmod(elapsed_time, 3600)
-#     minutes, seconds = divmod(rem, 60)
-#     print("Time passed: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
+    # Show how much time has passed to mine one block
+    elapsed_time = time.time() - start_time
+    hours, rem = divmod(elapsed_time, 3600)
+    minutes, seconds = divmod(rem, 60)
+    print("Time passed: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
 #
 # # Show how much time has passed to mine every block
 # final_time = time.time() - init_time
 # hours, rem = divmod(final_time, 3600)
 # minutes, seconds = divmod(rem, 60)
 # print("Final time passed: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
+
 

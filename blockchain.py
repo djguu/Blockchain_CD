@@ -4,6 +4,8 @@ from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
 import json
 import time
+from flask import Flask, request
+import requests
 
 
 class Block:
@@ -32,7 +34,7 @@ class Block:
 
 class Blockchain:
     # difficulty of PoW algorithm
-    difficulty = 2
+    difficulty = 4
 
     def __init__(self):
         """
@@ -60,7 +62,8 @@ class Blockchain:
         """
         return self.chain[-1]
 
-    def proof_of_work(self, block):
+    @staticmethod
+    def proof_of_work(block):
         """
         Function that tries different values of the nonce to get a hash
         that satisfies our difficulty criteria.
@@ -162,12 +165,11 @@ class Blockchain:
             # using `compute_hash` method.
             delattr(block, "hash")
 
-            if block.index != 0 and (not self.is_valid_proof(block, block_hash) or previous_hash != block.previous_hash):
+            if block.index != 0 and (not self.is_valid_proof(block, block_hash) or
+                                     previous_hash != block.previous_hash):
                 result = False
                 break
 
             block.hash, previous_hash = block_hash, block_hash
 
         return result
-
-
