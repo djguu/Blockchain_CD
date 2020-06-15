@@ -14,10 +14,10 @@ import time
 
 # from blockchain import *
 
-# from flask import Flask
-# from flask import request
-#
-# node = Flask(__name__)
+from flask import Flask
+import requests
+
+app = Flask(__name__)
 
 
 class Transaction:
@@ -29,18 +29,14 @@ class Transaction:
         self.signature = None
 
     def to_dict(self):
-        return OrderedDict({'sender_address': binascii.hexlify(self.sender_pk.export_key()).decode('ascii'),
-                            'recipient_address': binascii.hexlify(self.receiver_pk.export_key()).decode('ascii'),
-                            'message': self.message})
-
-    # def to_json(self):
+        return {'sender_address': binascii.hexlify(self.sender_pk.export_key()).decode('ascii'),
+                'recipient_address': binascii.hexlify(self.receiver_pk.export_key()).decode('ascii'),
+                'message': self.message}
 
     def sign_transaction(self):
         h = SHA256.new(str(self.to_dict()).encode('utf-8'))
         signer = pkcs1_15.new(self.sender_sk)
-        teste = signer.sign(h)
-        print(teste)
-        self.signature = binascii.hexlify(teste).decode('ascii')
+        self.signature = binascii.hexlify(signer.sign(h)).decode('ascii')
 
 
 class User:
@@ -82,27 +78,35 @@ class User:
     def set_keys(self):
         # Secret key of the user
         self.sk = RSA.import_key(open(self.sk_file).read())
-
         # Public key of the user
         self.pk = RSA.import_key(open(self.pk_file).read())
 
 
-def mine_unconfirmed_transactions():
-    result = blockchain.mine()
-    if not result:
-        return "No transactions to mine"
-    else:
-        if blockchain.check_chain_validity():
-            return "Block #{} is mined.".format(blockchain.last_block.index)
+client1 = User("testUser")
+client2 = User("testeUser2")
 
-        # Making sure we have the longest chain before announcing to the network
-        # chain_length = len(blockchain.chain)
-        # consensus()
-        # if chain_length == len(blockchain.chain):
-        # announce the recently mined block to the network
-        #    announce_new_block(blockchain.last_block)
-        # return "Block #{} is mined.".format(blockchain.last_block.index)
+transaction = Transaction(client1.pk, client1.sk, client2.pk, "User 1 sent X to User 2")
+transaction.sign_transaction()
 
+
+@app.route('/submit', methods=['GET'])
+def submit_textarea():
+    """
+    Endpoint to create a new transaction via our application.
+    """
+    post_object = {
+        "contents": transaction.to_dict(),
+        "signature": transaction.signature
+    }
+
+    # Submit a transaction
+    new_tx_address = "http://127.0.0.1:8000/new_transaction"
+
+    requests.post(new_tx_address,
+                  json=post_object,
+                  headers={'Content-type': 'application/json'})
+
+    return "Success", 201
 
 # # Initializing blockchain
 # blockchain = Blockchain()
@@ -137,3 +141,12 @@ def mine_unconfirmed_transactions():
 # # print("Final time passed: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
 #
 #
+if __name__ == '__main__':
+    from argparse import ArgumentParser
+
+    parser = ArgumentParser()
+    parser.add_argument('-p', '--port', default=5000, type=int, help='port to listen on')
+    args = parser.parse_args()
+    port = args.port
+
+    app.run(debug=True, host='127.0.0.1', port=port)

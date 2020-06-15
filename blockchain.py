@@ -1,5 +1,7 @@
 import binascii
 from hashlib import sha256
+
+from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
 import json
@@ -8,7 +10,7 @@ from flask import Flask, request
 import requests
 
 # import client
-from client import User, Transaction
+# from client import User, Transaction
 
 
 class Block:
@@ -131,7 +133,7 @@ class Blockchain:
 
     @staticmethod
     def verify_transaction(transaction):
-        public_key = binascii.unhexlify(transaction["contents"]["sender_address"])
+        public_key = RSA.import_key(binascii.unhexlify(transaction["contents"]["sender_address"]).decode())
         h = SHA256.new(str(transaction["contents"]).encode('utf-8'))
         try:
             verifier = pkcs1_15.new(public_key)
@@ -144,7 +146,7 @@ class Blockchain:
 
     def add_new_transaction(self, transaction):
         if self.verify_transaction(transaction):
-            self.unconfirmed_transactions.append(json.dumps(transaction["contents"]))
+            self.unconfirmed_transactions.append(json.dumps(transaction))
 
     def mine(self):
         """
@@ -205,59 +207,12 @@ blockchain.create_genesis_block()
 # the address to other participating members of the network
 peers = set()
 
-client1 = User("testUser")
-client2 = User("testeUser2")
-
-transaction = Transaction(client1.pk, client1.sk, client2.pk, "User 1 sent X to User 2")
-transaction.sign_transaction()
-print(binascii.unhexlify(transaction.to_dict()['sender_address']))
-
-"""
-REMOVER ISTO TUDO DAQUI
-"""
-@app.route('/submit', methods=['GET'])
-def submit_textarea():
-    """
-    Endpoint to create a new transaction via our application.
-    """
-    post_content = "teste"
-    author = "teste123"
-
-    # post_object = {
-    #     "sender_pk": "asdasd",
-    #     "contents": {
-    #         'sender_address': author,
-    #         'recipient_address': post_content,
-    #         "message": "asdasdasd"
-    #         ""
-    #     },
-    #     "signature": "sign"
-    # }
-    post_object = {
-        # "sender_pk": transaction.sender_pk,
-        "contents": transaction.to_dict(),
-        "signature": transaction.signature
-    }
-
-    # Submit a transaction
-    new_tx_address = "http://127.0.0.1:8000/new_transaction"
-
-    requests.post(new_tx_address,
-                  json=post_object,
-                  headers={'Content-type': 'application/json'})
-
-    return "Success", 201
-"""
-REMOVER ISTO TUDO DAQUI
-"""
-
 
 # endpoint to submit a new transaction. This will be used by
 # our application to add new data (posts) to the blockchain
 @app.route('/new_transaction', methods=['POST'])
 def new_transaction():
     tx_data = request.json
-    print(tx_data)
     required_fields = ["sender_address", "recipient_address", "message"]
 
     for field in required_fields:
@@ -265,9 +220,9 @@ def new_transaction():
             return "Invalid transaction data", 404
 
     # tx_data["timestamp"] = time.time()
-    print(tx_data["signature"])
 
     blockchain.add_new_transaction(tx_data)
+    # print(blockchain.unconfirmed_transactions)
 
     return "Success", 201
 
@@ -433,5 +388,13 @@ def announce_new_block(block):
                       headers=headers)
 
 
-# Uncomment this line if you want to specify the port number in the code
-app.run(debug=True, port=8000)
+
+if __name__ == '__main__':
+    from argparse import ArgumentParser
+
+    parser = ArgumentParser()
+    parser.add_argument('-p', '--port', default=8000, type=int, help='port to listen on')
+    args = parser.parse_args()
+    port = args.port
+
+    app.run(debug=True, host='127.0.0.1', port=port)
