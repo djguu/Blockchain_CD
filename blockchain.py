@@ -39,7 +39,7 @@ class Block:
 
 class Blockchain:
     # difficulty of PoW algorithm
-    difficulty = 4
+    difficulty = 2
 
     def __init__(self):
         """
@@ -55,7 +55,7 @@ class Blockchain:
         the chain. The block has index 0, previous_hash as 0, and
         a valid hash.
         """
-        genesis_block = Block(0, [], time.time(), "0")
+        genesis_block = Block(0, [], 0, "0")
         genesis_block.hash = genesis_block.compute_hash()
         self.chain.append(genesis_block)
 
@@ -92,10 +92,8 @@ class Blockchain:
           in the chain match.
         """
         previous_hash = self.last_block.hash
-
         if previous_hash != block.previous_hash:
             return False
-
         if not Blockchain.is_valid_proof(block, proof):
             return False
 
@@ -202,7 +200,7 @@ app = Flask(__name__)
 
 # the node's copy of blockchain
 blockchain = Blockchain()
-blockchain.create_genesis_block()
+# blockchain.create_genesis_block()
 
 # the address to other participating members of the network
 peers = set()
@@ -306,7 +304,7 @@ def register_with_existing_node():
 
 def create_chain_from_dump(chain_dump):
     generated_blockchain = Blockchain()
-    generated_blockchain.create_genesis_block()
+    # generated_blockchain.create_genesis_block()
     for idx, block_data in enumerate(chain_dump):
         if idx == 0:
             continue  # skip genesis block
