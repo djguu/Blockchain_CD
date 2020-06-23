@@ -13,13 +13,13 @@
 ### Run Nodes
 
 ````
-python blockchain.py -p 8000
+python app.py -p 8000
 ````
 ##### New nodes:
 ````
-python blockchain.py -p 8001
+python app.py -p 8001
 
-python blockchain.py -p ....
+python app.py -p ....
 ````
 
 #### Start client
