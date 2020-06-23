@@ -1,4 +1,4 @@
-# My Distribuited Computation Project
+# My Distributed Computation Project
 
 #### Using python 3.7
 
@@ -18,8 +18,7 @@ python blockchain.py -p 8000
 ##### New nodes:
 ````
 python blockchain.py -p 8001
-````
-````
+
 python blockchain.py -p ....
 ````
 
@@ -28,12 +27,24 @@ python blockchain.py -p ....
 python client.py
 ````
 ---
-New transaction:(use this for now)
+Register nodes:
 ````
-curl -X GET http://127.0.0.1:5000/submit
+curl -X GET http://127.0.0.1:8000/register
+curl -X GET http://127.0.0.1:8001/register
 ````
-
-Later transaction method (DONT USE THIS, DOESNT WORK)
+New transaction: (change 8000 for port number of node)
 ````
-curl -X POST http://127.0.0.1:5000/submit_transaction -H 'Content-Type: application/json' -d '{"sender_addr": "", ....}'
+curl -X POST http://127.0.0.1:6000/submit -H "Content-Type: application/json" -d "8000"
+````
+Check pending transactions:
+````
+curl -X GET http://127.0.0.1:8000/pending_tx
+````
+Mine transactions:
+````
+curl -X GET http://127.0.0.1:8000/mine
+````
+Check chains:
+````
+curl -X GET http://127.0.0.1:8000/chain
 ````

@@ -1,20 +1,17 @@
-from collections import OrderedDict
-
 import os.path
 from os import path
 
 from Crypto.PublicKey import RSA
 
 import binascii
-from hashlib import sha256
 from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
-import json
-import time
 
 # from blockchain import *
 
+import flask
 from flask import Flask
+from flask import request
 import requests
 
 app = Flask(__name__)
@@ -89,7 +86,7 @@ transaction = Transaction(client1.pk, client1.sk, client2.pk, "User 1 sent X to 
 transaction.sign_transaction()
 
 
-@app.route('/submit', methods=['GET'])
+@app.route('/submit', methods=['GET', 'POST'])
 def submit_textarea():
     """
     Endpoint to create a new transaction via our application.
@@ -100,7 +97,11 @@ def submit_textarea():
     }
 
     # Submit a transaction
-    new_tx_address = "http://127.0.0.1:8000/new_transaction"
+    if request.method == 'GET':
+        new_tx_address = "http://127.0.0.1:8000/new_transaction"
+    else:
+        port_nb = request.get_json()
+        new_tx_address = "http://127.0.0.1:" + str(port_nb) + "/new_transaction"
 
     requests.post(new_tx_address,
                   json=post_object,
@@ -157,11 +158,13 @@ def submit_textarea():
 # # print("Final time passed: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
 #
 #
+
+
 if __name__ == '__main__':
     from argparse import ArgumentParser
 
     parser = ArgumentParser()
-    parser.add_argument('-p', '--port', default=5000, type=int, help='port to listen on')
+    parser.add_argument('-p', '--port', default=6000, type=int, help='port to listen on')
     args = parser.parse_args()
     port = args.port
 
