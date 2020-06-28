@@ -1,2 +1,5 @@
 keys/
 .idea/
+venv/
+
+__pycache__/
