@@ -101,7 +101,6 @@ class Blockchain:
         self.add_block(new_block, proof)
 
         self.unconfirmed_transactions = []
-        # print("Nonce of block #" + str(new_block.index) + ": " + str(new_block.nonce))
 
         return True
 

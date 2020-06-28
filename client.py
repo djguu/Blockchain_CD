@@ -37,11 +37,11 @@ class Transaction:
 
 
 class User:
-    def __init__(self, user):
+    def __init__(self, username):
         # self.message = message
-        self.user = user
-        self.pk_file = 'keys/' + user + '.pk.pem'
-        self.sk_file = 'keys/' + user + '.sk.pem'
+        self.user = username
+        self.pk_file = 'keys/' + username + '.pk.pem'
+        self.sk_file = 'keys/' + username + '.sk.pem'
         self.sk = None
         self.pk = None
 
@@ -108,56 +108,6 @@ def submit_textarea():
                   headers={'Content-type': 'application/json'})
 
     return "Success", 201
-
-# def mine_unconfirmed_transactions():
-#     result = blockchain.mine()
-#     if not result:
-#         return "No transactions to mine"
-#     else:
-#         if blockchain.check_chain_validity():
-#             return "Block #{} is mined.".format(blockchain.last_block.index)
-#
-#         # Making sure we have the longest chain before announcing to the network
-#         # chain_length = len(blockchain.chain)
-#         # consensus()
-#         # if chain_length == len(blockchain.chain):
-#         # announce the recently mined block to the network
-#         #    announce_new_block(blockchain.last_block)
-#         # return "Block #{} is mined.".format(blockchain.last_block.index)
-
-# # Initializing blockchain
-# blockchain = Blockchain()
-#
-# # Initializing users
-# client1 = User("testUser")
-# client2 = User("testeUser2")
-#
-# # init_time = time.time()
-#
-# # Create transactions and blocks to mine them
-# for x in range(10):
-#     start_time = time.time()
-#
-#     transaction = Transaction(client1.pk, client1.sk, client2.pk, "User 1 sent X to User 2")
-#     transaction.sign_transaction()
-#
-#     blockchain.add_new_transaction(transaction)
-#
-#     print(mine_unconfirmed_transactions())
-#
-#     # Show how much time has passed to mine one block
-#     elapsed_time = time.time() - start_time
-#     hours, rem = divmod(elapsed_time, 3600)
-#     minutes, seconds = divmod(rem, 60)
-#     print("Time passed: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
-# #
-# # # Show how much time has passed to mine every block
-# # final_time = time.time() - init_time
-# # hours, rem = divmod(final_time, 3600)
-# # minutes, seconds = divmod(rem, 60)
-# # print("Final time passed: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
-#
-#
 
 
 if __name__ == '__main__':

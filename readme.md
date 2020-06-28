@@ -26,6 +26,11 @@ python app.py -p ....
 ````
 python client.py
 ````
+
+#### Start DNS
+````
+python dns.py
+````
 ---
 Register nodes:
 ````
